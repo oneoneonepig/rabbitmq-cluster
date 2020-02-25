@@ -1,0 +1,27 @@
+version: '3'
+services:
+  rab01:
+    image: "rabbitmq:3-management"
+    ports:
+    - "5672:5672"
+    - "15672:15672"
+    environment:
+      RABBITMQ_NODENAME: rabbit
+    hostname: rab01
+    volumes:
+    - "./.erlang.cookie:/var/lib/rabbitmq/.erlang.cookie"
+  rab02:
+    image: "rabbitmq:3-management"
+    ports:
+    - "5673:5672"
+    - "15673:15672"
+    environment:
+      RABBITMQ_NODENAME: rabbit
+    hostname: rab02
+    volumes:
+    - "./.erlang.cookie:/var/lib/rabbitmq/.erlang.cookie"
+  rabclt:
+    image: "rabbitmq:3"
+    hostname: rabclt
+    volumes:
+    - "./.erlang.cookie:/var/lib/rabbitmq/.erlang.cookie"
