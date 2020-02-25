@@ -22,7 +22,7 @@ func main() {
 	defer ch.Close()
 
 	q, err := ch.QueueDeclare(
-		"two.hello", // name
+		"ha.hello", // name
 		false,   // durable
 		false,   // delete when unused
 		false,   // exclusive
