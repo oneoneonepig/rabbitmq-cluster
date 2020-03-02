@@ -1,22 +1,27 @@
 # rabbitmq-cluster
 RabbitMQ Cluster with HA Queue
 
-## Nodes
-- rab01
-- rab02
+## [RabbitMQ ports](https://www.rabbitmq.com/clustering.html#ports)
+- TCP 5672 - AMQP
+- TCP 15672 - Management UI
 
-## Access to Management UI
-- rab01 - http://IPADDRESS:15672
-- rab02 - http://IPADDRESS:15673
+## Docker exposed ports
+- rab01
+  - TCP 5672 - AMQP
+  - TCP 15672 - Management UI
+- rab02
+  - TCP 5673 - AMQP
+  - TCP 15673 - Management UI
 
 ## Create nodes
 ```
 docker-compose up -d
 ```
 
-## Create cluster
-https://www.rabbitmq.com/clustering.html
-- Use file `.erlang.cookie` to authenticate nodes, copied during docker-compose
+## [Create cluster](https://www.rabbitmq.com/clustering.html)
+
+- Use [.erlang.cookie](https://www.rabbitmq.com/clustering.html#erlang-cookie) to authenticate nodes; Copied during docker-compose
+
 ```
 alias dockerexec1='docker exec rabbitmq_rab01_1'
 alias dockerexec2='docker exec rabbitmq_rab02_1'
@@ -30,13 +35,16 @@ dockerexec1 rabbitmqctl cluster_status
 dockerexec2 rabbitmqctl cluster_status
 ```
 
-## Add HA policy
-https://www.rabbitmq.com/ha.html
+## [Add HA policy](https://www.rabbitmq.com/ha.html)
+
+- Queue name starts with "ha." will be configured with HA
+
 ```
 dockerexec1 rabbitmqctl set_policy ha-all "^ha\." '{"ha-mode":"all"}'
 ```
 
 ## Send data to queue
+
 ```
 watch -n 1 go run helloworld/send/send.go
 watch -n 1 go run helloworld/send/send2.go
