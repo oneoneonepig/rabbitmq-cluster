@@ -12,8 +12,17 @@ func failOnError(err error, msg string) {
 	}
 }
 
+var (
+	username  string = "guest"
+	password  string = "guest"
+	host      string = "localhost"
+	port      string = "5672"
+	queueName string = "ha.hello"
+)
+
 func main() {
-	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
+	conn, err := amqp.Dial("amqp://" + username + ":" + password + "@" + host + ":" + port)
+
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()
 
@@ -22,12 +31,12 @@ func main() {
 	defer ch.Close()
 
 	q, err := ch.QueueDeclare(
-		"ha.hello", // name
-		false,   // durable
-		false,   // delete when unused
-		false,   // exclusive
-		false,   // no-wait
-		nil,     // arguments
+		queueName, // name
+		false,     // durable
+		false,     // delete when unused
+		false,     // exclusive
+		false,     // no-wait
+		nil,       // arguments
 	)
 	failOnError(err, "Failed to declare a queue")
 
