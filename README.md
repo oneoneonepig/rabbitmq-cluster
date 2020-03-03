@@ -1,4 +1,4 @@
-# rabbitmq-cluster
+# RabbitMQ on Docker Traffic Flow Diagram
 ```
                 Host
 +----------------------------------+
