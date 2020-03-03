@@ -1,5 +1,5 @@
 # rabbitmq-cluster
-RabbitMQ Cluster with HA Queue
+![image of ascii diagram](https://raw.githubusercontent.com/oneoneonepig/rabbitmq-cluster/master/diagram.ascii)
 
 ## [RabbitMQ ports](https://www.rabbitmq.com/clustering.html#ports)
 - TCP 5672 - AMQP
