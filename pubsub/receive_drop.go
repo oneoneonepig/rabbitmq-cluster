@@ -1,9 +1,8 @@
 package main
 
 import (
-	"log"
-
 	"github.com/streadway/amqp"
+	"log"
 )
 
 func failOnError(err error, msg string) {
@@ -17,7 +16,7 @@ var (
 	password  string = "admin"
 	host      string = "10.20.131.53"
 	port      string = "5672"
-	queueName string = "two.hello"
+	queueName string = "ha.hello.pubsub"
 )
 
 func main() {
@@ -30,20 +29,40 @@ func main() {
 	failOnError(err, "Failed to open a channel")
 	defer ch.Close()
 
+	err = ch.ExchangeDeclare(
+		"logs",   // name
+		"fanout", // type
+		true,     // durable
+		false,    // auto-deleted
+		false,    // internal
+		false,    // no-wait
+		nil,      // arguments
+	)
+	failOnError(err, "Failed to declare an exchange")
+
 	q, err := ch.QueueDeclare(
-		queueName, // name
-		false,     // durable
-		false,     // delete when unused
-		false,     // exclusive
-		false,     // no-wait
-		nil,       // arguments
+		"",    // name
+		false, // durable
+		false, // delete when unused
+		true,  // exclusive
+		false, // no-wait
+		nil,   // arguments
 	)
 	failOnError(err, "Failed to declare a queue")
+
+	err = ch.QueueBind(
+		q.Name, // queue name
+		"",     // routing key
+		"logs", // exchange
+		false,
+		nil,
+	)
+	failOnError(err, "Failed to bind a queue")
 
 	msgs, err := ch.Consume(
 		q.Name, // queue
 		"",     // consumer
-		true,   // auto-ack
+		false,   // auto-ack
 		false,  // exclusive
 		false,  // no-local
 		false,  // no-wait
@@ -55,7 +74,8 @@ func main() {
 
 	go func() {
 		for d := range msgs {
-			log.Printf("Received a message: %s", d.Body)
+			log.Printf(" [x] Log dropped.")
+			d.Ack(false)
 		}
 	}()
 

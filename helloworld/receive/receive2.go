@@ -13,11 +13,11 @@ func failOnError(err error, msg string) {
 }
 
 var (
-	username  string = "guest"
-	password  string = "guest"
-	host      string = "localhost"
-	port      string = "5673"
-	queueName string = "ha.hello"
+	username  string = "admin"
+	password  string = "admin"
+	host      string = "10.20.131.54"
+	port      string = "5672"
+	queueName string = "two.hello"
 )
 
 func main() {

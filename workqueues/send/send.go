@@ -2,7 +2,8 @@ package main
 
 import (
 	"log"
-
+	"os"
+	"strings"
 	"github.com/streadway/amqp"
 )
 
@@ -13,11 +14,11 @@ func failOnError(err error, msg string) {
 }
 
 var (
-	username  string = "guest"
-	password  string = "guest"
-	host      string = "localhost"
-	port      string = "5673"
-	queueName string = "ha.hello"
+	username  string = "admin"
+	password  string = "admin"
+	host      string = "10.20.131.53"
+	port      string = "5672"
+	queueName string = "ha.hello3"
 )
 
 func main() {
@@ -31,23 +32,40 @@ func main() {
 
 	q, err := ch.QueueDeclare(
 		queueName, // name
-		false,     // durable
+		true,     // durable
 		false,     // delete when unused
 		false,     // exclusive
 		false,     // no-wait
 		nil,       // arguments
 	)
+
+	err = ch.Qos(
+		1,     // prefetch count
+		0,     // prefetch size
+		false, // global
+	)
+
 	failOnError(err, "Failed to declare a queue")
 
-	body := "Hello World!"
+	body := bodyFrom(os.Args)
 	err = ch.Publish(
 		"",     // exchange
 		q.Name, // routing key
 		false,  // mandatory
 		false,  // immediate
 		amqp.Publishing{
+			DeliveryMode: amqp.Persistent,
 			ContentType: "text/plain",
 			Body:        []byte(body),
 		})
 	failOnError(err, "Failed to publish a message")
+}
+func bodyFrom(args []string) string {
+	var s string
+	if (len(args) < 2 || os.Args[1] == "") {
+		s = "hello"
+	} else {
+		s = strings.Join(args[1:], " ")
+	}
+	return s
 }

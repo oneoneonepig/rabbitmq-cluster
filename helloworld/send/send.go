@@ -1,9 +1,10 @@
 package main
 
 import (
-	"log"
-
+	"flag"
 	"github.com/streadway/amqp"
+	"log"
+	"time"
 )
 
 func failOnError(err error, msg string) {
@@ -13,24 +14,33 @@ func failOnError(err error, msg string) {
 }
 
 var (
-	username  string = "guest"
-	password  string = "guest"
-	host      string = "localhost"
-	port      string = "5672"
-	queueName string = "ha.hello"
+	username  = flag.String("username", "admin", "username")
+	password  = flag.String("password", "admin", "password")
+	host      = flag.String("host", "10.20.131.54", "server address")
+	port      = flag.String("port", "5672", "server port")
+	queueName = flag.String("name", "two.hello", "queue name")
 )
 
 func main() {
-	conn, err := amqp.Dial("amqp://" + username + ":" + password + "@" + host + ":" + port)
+	// Create starting timestamp
+	start := time.Now()
+
+	// Parse flags
+	flag.Parse()
+
+	// Dial connection
+	conn, err := amqp.Dial("amqp://" + *username + ":" + *password + "@" + *host + ":" + *port)
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()
 
+	// Open channel
 	ch, err := conn.Channel()
 	failOnError(err, "Failed to open a channel")
 	defer ch.Close()
 
+	// Declare queue
 	q, err := ch.QueueDeclare(
-		queueName, // name
+		*queueName, // name
 		false,     // durable
 		false,     // delete when unused
 		false,     // exclusive
@@ -39,7 +49,8 @@ func main() {
 	)
 	failOnError(err, "Failed to declare a queue")
 
-	body := "Hello World!"
+	// Publish message
+	body := "Hello! It's " + time.Now().String()
 	err = ch.Publish(
 		"",     // exchange
 		q.Name, // routing key
@@ -50,4 +61,8 @@ func main() {
 			Body:        []byte(body),
 		})
 	failOnError(err, "Failed to publish a message")
+
+	// Print elasped time
+	elapsed := time.Since(start).String()
+	log.Println("Time elapsed: " + elapsed)
 }
