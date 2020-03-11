@@ -7,12 +7,11 @@ import (
 	"log"
 	"os"
 	"os/signal"
-//	"strconv"
 	"syscall"
 	"time"
 )
 
-// Helper function error handling
+// Helper function: error handling
 func failOnError(err error, msg string) {
 	if err != nil {
 		log.Fatalf("%s: %s", msg, err)
@@ -23,7 +22,7 @@ var (
 	// Declare flags variables
 	username  = flag.StringP("username", "u", "admin", "username")
 	password  = flag.StringP("password", "p", "admin", "password")
-	host      = flag.StringP("host", "h", "10.20.131.54:5672", "host address and port")
+	host      = flag.StringP("host", "h", "localhost:5672", "host address and port")
 	queueName = flag.StringP("name", "n", "two.hello", "queue name")
 	interval  = flag.StringP("interval", "i", "1s", "interval between messages")
 
@@ -45,7 +44,7 @@ func main() {
 	killSignal := make(chan os.Signal, 1)
 	signal.Notify(killSignal, syscall.SIGINT, syscall.SIGTERM)
 
-	// --- Start Loop --
+	// --- Start Loop ---
 	fmt.Println("Start sending messages...")
 	go func() {
 		for {
@@ -95,17 +94,19 @@ func main() {
 	// --- End Loop ---
 
 	<-killSignal
-	fmt.Println("Interrupted")
+	fmt.Printf("Interrupted\n")
 
-	// Print message count and elapsed time
+	// Skip and end if no messages were sent
+	if (msgCount == 0) {
+		log.Fatalf("No messages were sent.\n")
+	}
+
+	// Print message count, elapsed time and average time per message
 	elapsed := time.Since(start)
-	elapsedMilli := int64(elapsed * time.Millisecond)
-	fmt.Println(int64(elapsedMilli / msgCount))
-	os.Exit(0)
+	avgElapsedInt64 := int64(elapsed) / msgCount
+	avgElapsedDuration := time.Duration(avgElapsedInt64)
 
-	//msgCountString, _ := strconv.ParseInt(msgCount, 10, 64)
-	//	msgCountDuration, _ := time.ParseDuration(msgCountString)
-	//	fmt.Println("Messages sent: " + msgCountString)
-	//	fmt.Println("Time elapsed: " + elapsed.String())
-	//	fmt.Println("Average per message: " + (elapsed / msgCountDuration).String())
+	fmt.Printf("Messages sent: %d\n", msgCount)
+	fmt.Printf("Time elapsed: %s\n", elapsed.Truncate(time.Millisecond).String())
+	fmt.Printf("Average per message: %s\n", avgElapsedDuration.Truncate(time.Millisecond).String())
 }

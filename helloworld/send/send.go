@@ -1,10 +1,11 @@
 package main
 
 import (
-	"flag"
+	flag "github.com/spf13/pflag"
 	"github.com/streadway/amqp"
 	"log"
 	"time"
+	"fmt"
 )
 
 func failOnError(err error, msg string) {
@@ -14,11 +15,10 @@ func failOnError(err error, msg string) {
 }
 
 var (
-	username  = flag.String("username", "admin", "username")
-	password  = flag.String("password", "admin", "password")
-	host      = flag.String("host", "10.20.131.54", "server address")
-	port      = flag.String("port", "5672", "server port")
-	queueName = flag.String("name", "two.hello", "queue name")
+        username  = flag.StringP("username", "u", "admin", "username")
+        password  = flag.StringP("password", "p", "admin", "password")
+        host      = flag.StringP("host", "h", "localhost:5672", "host address and port")
+        queueName = flag.StringP("name", "n", "two.hello", "queue name")
 )
 
 func main() {
@@ -29,7 +29,7 @@ func main() {
 	flag.Parse()
 
 	// Dial connection
-	conn, err := amqp.Dial("amqp://" + *username + ":" + *password + "@" + *host + ":" + *port)
+	conn, err := amqp.Dial("amqp://" + *username + ":" + *password + "@" + *host)
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()
 
@@ -63,6 +63,6 @@ func main() {
 	failOnError(err, "Failed to publish a message")
 
 	// Print elasped time
-	elapsed := time.Since(start).String()
-	log.Println("Time elapsed: " + elapsed)
+	elapsed := time.Since(start)
+	fmt.Printf("Time elapsed: %s\n", elapsed.Truncate(time.Millisecond).String())
 }
