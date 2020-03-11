@@ -12,9 +12,9 @@ import (
 )
 
 // Helper function: error handling
-func failOnError(err error, msg string) {
+func failOnError(err error) {
 	if err != nil {
-		log.Panicf("%s: %s", msg, err)
+		log.Panic(err)
 	}
 }
 
@@ -47,11 +47,11 @@ func main() {
 
 	conn, err := amqp.Dial("amqp://" + *username + ":" + *password + "@" + *host)
 
-	failOnError(err, "Failed to connect to RabbitMQ")
+	failOnError(err)
 	defer conn.Close()
 
 	ch, err := conn.Channel()
-	failOnError(err, "Failed to open a channel")
+	failOnError(err)
 	defer ch.Close()
 
 	q, err := ch.QueueDeclare(
@@ -62,7 +62,7 @@ func main() {
 		false,      // no-wait
 		nil,        // arguments
 	)
-	failOnError(err, "Failed to declare a queue")
+	failOnError(err)
 
 	msgs, err := ch.Consume(
 		q.Name, // queue
@@ -73,7 +73,7 @@ func main() {
 		false,  // no-wait
 		nil,    // args
 	)
-	failOnError(err, "Failed to register a consumer")
+	failOnError(err)
 
 	go func() {
 		for d := range msgs {

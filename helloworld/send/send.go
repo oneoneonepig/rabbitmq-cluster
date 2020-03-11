@@ -8,9 +8,9 @@ import (
 	"time"
 )
 
-func failOnError(err error, msg string) {
+func failOnError(err error) {
 	if err != nil {
-		log.Panicf("%s: %s", msg, err)
+		log.Panic(err)
 	}
 }
 
@@ -30,12 +30,12 @@ func main() {
 
 	// Dial connection
 	conn, err := amqp.Dial("amqp://" + *username + ":" + *password + "@" + *host)
-	failOnError(err, "Failed to connect to RabbitMQ")
+	failOnError(err)
 	defer conn.Close()
 
 	// Open channel
 	ch, err := conn.Channel()
-	failOnError(err, "Failed to open a channel")
+	failOnError(err)
 	defer ch.Close()
 
 	// Declare queue
@@ -47,10 +47,10 @@ func main() {
 		false,      // no-wait
 		nil,        // arguments
 	)
-	failOnError(err, "Failed to declare a queue")
+	failOnError(err)
 
 	// Publish message
-	body := "Hello! It's " + time.Now().String()
+	body := "Hello! It's " + time.Now().Format(time.UnixDate)
 	err = ch.Publish(
 		"",     // exchange
 		q.Name, // routing key
@@ -60,7 +60,7 @@ func main() {
 			ContentType: "text/plain",
 			Body:        []byte(body),
 		})
-	failOnError(err, "Failed to publish a message")
+	failOnError(err)
 
 	// Print information and elasped time
 	fmt.Printf("Message sent to queue %s\n", *queueName)

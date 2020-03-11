@@ -12,9 +12,9 @@ import (
 )
 
 // Helper function: error handling
-func failOnError(err error, msg string) {
+func failOnError(err error) {
 	if err != nil {
-		log.Panicf("%s: %s", msg, err)
+		log.Panic(err)
 	}
 }
 
@@ -38,7 +38,7 @@ func main() {
 	// Parse flags
 	flag.Parse()
 	interval_t, err := time.ParseDuration(*interval)
-	failOnError(err, "Failed to convert interval to time.Duration")
+	failOnError(err)
 
 	// Create signal handler
 	killSignal := make(chan os.Signal, 1)
@@ -50,12 +50,12 @@ func main() {
 		for {
 			// Dial connection
 			conn, err := amqp.Dial("amqp://" + *username + ":" + *password + "@" + *host)
-			failOnError(err, "Failed to connect to RabbitMQ")
+			failOnError(err)
 			defer conn.Close()
 
 			// Open channel
 			ch, err := conn.Channel()
-			failOnError(err, "Failed to open a channel")
+			failOnError(err)
 			defer ch.Close()
 
 			// Declare queue
@@ -67,10 +67,10 @@ func main() {
 				false,      // no-wait
 				nil,        // arguments
 			)
-			failOnError(err, "Failed to declare a queue")
+			failOnError(err)
 
 			// Publish message
-			body := "Hello! It's " + time.Now().String()
+			body := "Hello! It's " + time.Now().Format(time.UnixDate)
 			err = ch.Publish(
 				"",     // exchange
 				q.Name, // routing key
@@ -80,7 +80,7 @@ func main() {
 					ContentType: "text/plain",
 					Body:        []byte(body),
 				})
-			failOnError(err, "Failed to publish a message")
+			failOnError(err)
 
 			// Add count to msgCount
 			msgCount++
@@ -97,7 +97,7 @@ func main() {
 
 	// Skip and end if no messages were sent
 	if msgCount == 0 {
-		log.Fatalf("No messages were sent. Probably the connection is not established?\n")
+		log.Panicf("No messages were sent. Probably the connection is not established?\n")
 	}
 
 	// Print message count, elapsed time and average time per message
