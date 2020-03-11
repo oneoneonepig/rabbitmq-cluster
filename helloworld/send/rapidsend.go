@@ -51,12 +51,10 @@ func main() {
 			// Dial connection
 			conn, err := amqp.Dial("amqp://" + *username + ":" + *password + "@" + *host)
 			failOnError(err)
-			defer conn.Close()
 
 			// Open channel
 			ch, err := conn.Channel()
 			failOnError(err)
-			defer ch.Close()
 
 			// Declare queue
 			q, err := ch.QueueDeclare(
@@ -84,6 +82,10 @@ func main() {
 
 			// Add count to msgCount
 			msgCount++
+
+			// Close channel and connection
+			ch.Close()
+			conn.Close()
 
 			// Sleep
 			time.Sleep(interval_t)
