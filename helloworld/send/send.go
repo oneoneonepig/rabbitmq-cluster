@@ -1,11 +1,11 @@
 package main
 
 import (
+	"fmt"
 	flag "github.com/spf13/pflag"
 	"github.com/streadway/amqp"
 	"log"
 	"time"
-	"fmt"
 )
 
 func failOnError(err error, msg string) {
@@ -15,10 +15,10 @@ func failOnError(err error, msg string) {
 }
 
 var (
-        username  = flag.StringP("username", "u", "admin", "username")
-        password  = flag.StringP("password", "p", "admin", "password")
-        host      = flag.StringP("host", "h", "localhost:5672", "host address and port")
-        queueName = flag.StringP("name", "n", "two.hello", "queue name")
+	username  = flag.StringP("username", "u", "admin", "username")
+	password  = flag.StringP("password", "p", "admin", "password")
+	host      = flag.StringP("host", "h", "localhost:5672", "host address and port")
+	queueName = flag.StringP("name", "n", "two.hello", "queue name")
 )
 
 func main() {
@@ -41,11 +41,11 @@ func main() {
 	// Declare queue
 	q, err := ch.QueueDeclare(
 		*queueName, // name
-		false,     // durable
-		false,     // delete when unused
-		false,     // exclusive
-		false,     // no-wait
-		nil,       // arguments
+		false,      // durable
+		false,      // delete when unused
+		false,      // exclusive
+		false,      // no-wait
+		nil,        // arguments
 	)
 	failOnError(err, "Failed to declare a queue")
 
@@ -62,7 +62,8 @@ func main() {
 		})
 	failOnError(err, "Failed to publish a message")
 
-	// Print elasped time
+	// Print information and elasped time
+	fmt.Printf("Message sent to queue %s\n", *queueName)
 	elapsed := time.Since(start)
 	fmt.Printf("Time elapsed: %s\n", elapsed.Truncate(time.Millisecond).String())
 }

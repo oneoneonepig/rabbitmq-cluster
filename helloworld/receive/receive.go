@@ -43,7 +43,7 @@ func main() {
 	signal.Notify(killSignal, syscall.SIGINT, syscall.SIGTERM)
 
 	// --- Start receiving messages ---
-	fmt.Println("Start receiving messages...")
+	fmt.Printf("Receiving messages from queue %s\n", *queueName)
 
 	conn, err := amqp.Dial("amqp://" + *username + ":" + *password + "@" + *host)
 
@@ -56,11 +56,11 @@ func main() {
 
 	q, err := ch.QueueDeclare(
 		*queueName, // name
-		false,     // durable
-		false,     // delete when unused
-		false,     // exclusive
-		false,     // no-wait
-		nil,       // arguments
+		false,      // durable
+		false,      // delete when unused
+		false,      // exclusive
+		false,      // no-wait
+		nil,        // arguments
 	)
 	failOnError(err, "Failed to declare a queue")
 
@@ -87,7 +87,7 @@ func main() {
 	<-killSignal
 	fmt.Printf("Interrupted\n")
 
-	// Print message count and elapsed time 
+	// Print message count and elapsed time
 	elapsed := time.Since(start)
 
 	fmt.Printf("Messages received: %d\n", msgCount)

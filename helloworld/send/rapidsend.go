@@ -45,10 +45,9 @@ func main() {
 	signal.Notify(killSignal, syscall.SIGINT, syscall.SIGTERM)
 
 	// --- Start Loop ---
-	fmt.Println("Start sending messages...")
+	fmt.Printf("Sending messages to queue %s every %s\n", *queueName, *interval)
 	go func() {
 		for {
-
 			// Dial connection
 			conn, err := amqp.Dial("amqp://" + *username + ":" + *password + "@" + *host)
 			failOnError(err, "Failed to connect to RabbitMQ")
@@ -97,8 +96,8 @@ func main() {
 	fmt.Printf("Interrupted\n")
 
 	// Skip and end if no messages were sent
-	if (msgCount == 0) {
-		log.Fatalf("No messages were sent.\n")
+	if msgCount == 0 {
+		log.Fatalf("No messages were sent. Probably the connection is not established?\n")
 	}
 
 	// Print message count, elapsed time and average time per message
