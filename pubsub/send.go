@@ -1,10 +1,9 @@
 package main
 
 import (
-	"log"
-	"os"
-	"strings"
+	flag "github.com/spf13/pflag"
 	"github.com/streadway/amqp"
+	"log"
 )
 
 func failOnError(err error, msg string) {
@@ -14,15 +13,19 @@ func failOnError(err error, msg string) {
 }
 
 var (
-	username  string = "admin"
-	password  string = "admin"
-	host      string = "10.20.131.53"
-	port      string = "5672"
-	queueName string = "ha.hello.pubsub"
+	username     = flag.StringP("username", "u", "admin", "username")
+	password     = flag.StringP("password", "p", "admin", "password")
+	host         = flag.StringP("host", "h", "localhost:5672", "host address and port")
+	exchangeName = flag.StringP("name", "n", "pubsub", "exchange name")
+	message      = flag.StringP("message", "m", "Hello world!", "message body")
 )
 
+func init() {
+	flag.Parse()
+}
+
 func main() {
-	conn, err := amqp.Dial("amqp://" + username + ":" + password + "@" + host + ":" + port)
+	conn, err := amqp.Dial("amqp://" + *username + ":" + *password + "@" + *host)
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()
 
@@ -31,35 +34,25 @@ func main() {
 	defer ch.Close()
 
 	err = ch.ExchangeDeclare(
-		"logs",   // name
-		"fanout", // type
-		true,     // durable
-		false,    // auto-deleted
-		false,    // internal
-		false,    // no-wait
-		nil,      // arguments
+		*exchangeName, // name
+		"fanout",      // type
+		true,          // durable
+		false,         // auto-deleted
+		false,         // internal
+		false,         // no-wait
+		nil,           // arguments
 	)
 	failOnError(err, "Failed to declare an exchange")
 
-	body := bodyFrom(os.Args)
 	err = ch.Publish(
-		"logs",     // exchange
-		"", // routing key
-		false,  // mandatory
-		false,  // immediate
+		*exchangeName, // exchange
+		"",            // routing key
+		false,         // mandatory
+		false,         // immediate
 		amqp.Publishing{
 			DeliveryMode: amqp.Persistent,
-			ContentType: "text/plain",
-			Body:        []byte(body),
+			ContentType:  "text/plain",
+			Body:         []byte(*message),
 		})
 	failOnError(err, "Failed to publish a message")
-}
-func bodyFrom(args []string) string {
-	var s string
-	if (len(args) < 2 || os.Args[1] == "") {
-		s = "hello"
-	} else {
-		s = strings.Join(args[1:], " ")
-	}
-	return s
 }
